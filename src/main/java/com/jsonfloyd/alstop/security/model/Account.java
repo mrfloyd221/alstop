@@ -37,7 +37,7 @@ public class Account implements UserDetails {
 	@Setter private boolean enabled, credentialNonExpired, accountNonExpired, accountNonLocked;
 	
 	public Account(){
-		this.enabled = true;
+		this.enabled = false;
 		this.accountNonExpired = true;
 		this.accountNonLocked = true;
 		this.credentialNonExpired = true;

@@ -1,35 +1,36 @@
 package com.jsonfloyd.alstop.security.service;
 
-import java.awt.List;
-import java.util.ArrayList;
-import java.util.Collection;
+
+import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Primary;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
+
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.jsonfloyd.alstop.security.exception.AccountCurrentlyEnabledException;
 import com.jsonfloyd.alstop.security.model.Account;
 import com.jsonfloyd.alstop.security.model.AccountDto;
+import com.jsonfloyd.alstop.security.model.VerificationToken;
 import com.jsonfloyd.alstop.security.repository.AccountRepository;
+import com.jsonfloyd.alstop.security.repository.VerificationTokenJpaRepository;
 @Primary
 @Service
-public class AccountService implements UserDetailsService {
+public class AccountService implements  UserDetailsService {
 	@Autowired
 	private AccountRepository accountRepository;
+
 	@Autowired
 	private PasswordEncoder passwordEncoder;
 	@Override
 	public UserDetails loadUserByUsername(String arg0) throws UsernameNotFoundException {
 		Account acc = accountRepository.findAccontByEmail(arg0);
 		if(acc == null)
-			throw new UsernameNotFoundException("User not found with username = " + arg0);
+			throw new UsernameNotFoundException("User not found with email = " + arg0);
 		return acc;
 	}
 	public Account createAccount(AccountDto acc){
@@ -40,5 +41,6 @@ public class AccountService implements UserDetailsService {
 		return accountRepository.save(user);
 		
 	}
+
 	
 }
