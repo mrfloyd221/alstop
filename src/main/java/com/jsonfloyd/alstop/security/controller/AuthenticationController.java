@@ -35,11 +35,17 @@ public class AuthenticationController {
 	@ResponseBody
 	public Account signUp(@RequestBody AccountDto acc, WebRequest request){
 		//TODO create activation token
+		if(acc == null){
+			//TODO bad credentials error
+			return null;
+		}
+		//TODO validate credentials
 		Account account =  accountService.createAccount(acc);
 		if(account != null){
 			eventPublisher.publishEvent(new OnRegistrationSuccessEvent(account, request.getContextPath(), request.getLocale()));
 		}
-		return null;
+		//TODO CREATED response
+		return account;
 	}
 	@GetMapping
 	@ResponseBody

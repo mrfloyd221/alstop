@@ -18,7 +18,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import lombok.Getter;
 import lombok.Setter;
 @Entity
-public class Account implements UserDetails {
+public class  Account implements UserDetails {
 	/**
 	 * 
 	 */
@@ -45,7 +45,7 @@ public class Account implements UserDetails {
 	@Override
 	public Collection<? extends GrantedAuthority> getAuthorities() {
 		// TODO Auto-generated method stub
-		List<SimpleGrantedAuthority> authorities = new ArrayList<SimpleGrantedAuthority>();
+		List<SimpleGrantedAuthority> authorities = new ArrayList<>();
 		roles.forEach(role -> {
 			authorities.add(new SimpleGrantedAuthority(role));
 		});

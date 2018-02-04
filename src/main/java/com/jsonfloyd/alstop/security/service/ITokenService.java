@@ -5,7 +5,7 @@ import com.jsonfloyd.alstop.security.model.Account;
 import com.jsonfloyd.alstop.security.model.VerificationToken;
 
 public interface ITokenService {
-	VerificationToken createVerificationToken(Account account, String token) throws AccountCurrentlyEnabledException;
+	VerificationToken createVerificationToken(Account account) throws AccountCurrentlyEnabledException;
 	VerificationToken getVerificationToken(String token);
-	VerificationToken getVerificationTokenByEmail(String email);
+
 }
