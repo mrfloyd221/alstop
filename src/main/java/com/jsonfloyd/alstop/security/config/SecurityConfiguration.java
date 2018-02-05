@@ -33,9 +33,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 	}
 
 	@Bean
-	public SecurityProperties getSecurityProperties() {
-		return new SecurityProperties();
-	}
+	public SecurityProperties getSecurityProperties(){return new SecurityProperties();}
 
 	@Bean
 	public JwtAuthorizationFilter getJwtAuthorizationFilter() throws Exception {
@@ -46,13 +44,17 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
-		http.authorizeRequests().anyRequest().authenticated().antMatchers(HttpMethod.POST, properties.getSignUpUrl())
-				.permitAll().antMatchers(HttpMethod.POST, properties.getLoginUrl()).permitAll().and()
-				.addFilter(getJwtLoginFilter()).addFilter(getJwtAuthorizationFilter())
-				// this disables session creation on Spring Security
+		http.authorizeRequests()
+        .antMatchers(HttpMethod.GET, "/confirm", "/reactivate").permitAll()
+        .antMatchers(HttpMethod.POST, properties.getLoginUrl(), properties.getSignUpUrl()).permitAll()
+		.anyRequest().authenticated()
+				.and()
+				.addFilter(getJwtLoginFilter())
+				.addFilter(getJwtAuthorizationFilter())
 				.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and().cors().disable()
 				.csrf().disable();
 	}
+
 
 	@Override
 	public void configure(AuthenticationManagerBuilder auth) throws Exception {

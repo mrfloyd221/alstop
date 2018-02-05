@@ -3,6 +3,7 @@ package com.jsonfloyd.alstop.security.controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpMethod;
+import org.springframework.integration.dsl.http.Http;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
@@ -41,29 +42,38 @@ public class AuthenticationController {
 		}
 		//TODO validate credentials
 		Account account =  accountService.createAccount(acc);
+
 		if(account != null){
 			eventPublisher.publishEvent(new OnRegistrationSuccessEvent(account, request.getContextPath(), request.getLocale()));
 		}
 		//TODO CREATED response
 		return account;
 	}
-	@GetMapping
+	@RequestMapping(
+			value = "/confirm",
+			params = { "token"},
+			method = RequestMethod.GET)
 	@ResponseBody
 	public String confirmEmail(@RequestParam("token") String token){
 		VerificationToken verificationToken = tokenService.getVerificationToken(token);
 		if(verificationToken == null)
 			//TODO token not exist error
-			return null;
+			return "token is null";
 		if(verificationToken.isExpired())
 			//TODO expired error
-			return null;
+			return "expired";
 		//TODO account enabled event
 		Account account = verificationToken.getAccount();
-		account.setEnabled(true);
+		if(account == null)
+			return "account is null";
+		account = accountService.enableAccount(account.getId());
 		//TODO success confirmation response
-		return "success";
+		return account.getId().toString();
 	}
-	@GetMapping
+	@RequestMapping(
+			value = "/reactivate",
+			params = { "token"},
+			method = RequestMethod.GET)
 	@ResponseBody
 	public String resendConfirmationToken(@RequestParam("token") String oldToken){
 		//TODO resent activation

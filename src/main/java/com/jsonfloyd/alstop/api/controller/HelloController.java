@@ -12,6 +12,7 @@ public class HelloController {
 	
 	@RequestMapping("/hello")
 	@ResponseBody
+	@PreAuthorize("isAuthenticated()")
 	public String hello(){
 		String name = SecurityContextHolder.getContext().getAuthentication().getName();
 		return "hello "+ name;

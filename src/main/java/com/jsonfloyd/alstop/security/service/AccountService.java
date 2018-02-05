@@ -18,6 +18,9 @@ import com.jsonfloyd.alstop.security.model.AccountDto;
 import com.jsonfloyd.alstop.security.model.VerificationToken;
 import com.jsonfloyd.alstop.security.repository.AccountRepository;
 import com.jsonfloyd.alstop.security.repository.VerificationTokenJpaRepository;
+
+import javax.persistence.criteria.CriteriaBuilder;
+
 @Primary
 @Service
 public class AccountService implements  UserDetailsService {
@@ -40,6 +43,13 @@ public class AccountService implements  UserDetailsService {
 		user.grantAuthority("USER");
 		return accountRepository.save(user);
 		
+	}
+	public Account enableAccount(Long accountId){
+		Account existedAccount = accountRepository.findOne(accountId);
+		existedAccount.setEnabled(true);
+		accountRepository.save(existedAccount);
+		return existedAccount;
+
 	}
 
 	

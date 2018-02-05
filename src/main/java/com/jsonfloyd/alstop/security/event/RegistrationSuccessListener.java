@@ -29,12 +29,11 @@ public class RegistrationSuccessListener implements ApplicationListener<OnRegist
 		Account account = event.getAccount();
 
 		VerificationToken token = tokenService.createVerificationToken(account);
-		String confirmationUrl = event.getAppUrl() + "/confirm&token=" + token.getToken();
-		String message = messageSource.getMessage("messages.regSuccess", null, event.getLocale());
+		String confirmationUrl = event.getAppUrl() + "/confirm?token=" + token.getToken();
 		SimpleMailMessage email = new SimpleMailMessage();
 		email.setTo(account.getEmail());
 		email.setSubject("Registration confirmation");
-		email.setText(message + " rn" + "http://localhost:8080" + confirmationUrl);
+		email.setText("http://localhost:8080" + confirmationUrl);
 		mailSender.send(email);
 	}
 
