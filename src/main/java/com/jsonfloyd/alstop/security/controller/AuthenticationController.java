@@ -1,22 +1,29 @@
 package com.jsonfloyd.alstop.security.controller;
 
+import com.jsonfloyd.alstop.security.exception.TokenNotFoundException;
+import com.jsonfloyd.alstop.util.exception.ResourceException;
+import com.jsonfloyd.alstop.util.model.GenericResponse;
 import com.jsonfloyd.alstop.util.service.MessageService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 
 import com.jsonfloyd.alstop.security.model.Account;
 import com.jsonfloyd.alstop.security.model.AccountDto;
 import com.jsonfloyd.alstop.security.model.VerificationToken;
 import com.jsonfloyd.alstop.security.service.AccountService;
 import com.jsonfloyd.alstop.security.service.TokenService;
+import org.springframework.web.context.request.WebRequest;
+
+import java.net.URI;
+import java.net.URISyntaxException;
 
 @Controller
+@Slf4j
 public class AuthenticationController {
 	private final AccountService accountService;
 	private final TokenService tokenService;
@@ -30,56 +37,55 @@ public class AuthenticationController {
 
 	@PostMapping("/register")
 	@ResponseBody
-	public Account signUp(@RequestBody AccountDto acc){
-		//TODO create activation token
+    @ResponseStatus(HttpStatus.CREATED)
+	public GenericResponse signUp(@RequestBody AccountDto acc){
 		if(acc == null)
-			//TODO bad credentials error
-			return null;
+			throw new BadCredentialsException("account cannot be null");
 		//TODO validate credentials
 		Account account =  accountService.createAccount(acc);
-		if(account == null)
-		    //TODO account not created
-		    return null;
         VerificationToken token = tokenService.createVerificationToken(account);
         messageService.sendActivationToken(token.getToken(), account.getEmail());
-		//TODO CREATED response
-		return account;
+		GenericResponse response = new GenericResponse();
+        response.setHttpStatus(HttpStatus.CREATED);
+		response.addField("message", "account successfully created");
+		response.addField("location", "localhost:8080/user/"+account.getId());
+		response.addField("account", account);
+	    return response;
 	}
 	@RequestMapping(
 			value = "/confirm",
 			params = { "token"},
 			method = RequestMethod.GET)
 	@ResponseBody
-	public String confirmEmail(@RequestParam("token") String token){
+    @ResponseStatus(HttpStatus.ACCEPTED)
+	public GenericResponse confirmEmail(@RequestParam("token") String token){
 		VerificationToken verificationToken = tokenService.getVerificationToken(token);
 		if(verificationToken == null)
-			//TODO token not exist error
-			return "token not found";
+			throw new ResourceException("Verification token cannot be null");
 		if(verificationToken.isExpired())
-			//TODO expired error
-			return "expired";
+            throw new ResourceException("Verification token expired");
 		//TODO account enabled event
 		Account account = verificationToken.getAccount();
-		if(account == null)
-			return "account is null";
 		account = accountService.enableAccount(account.getId());
-		//TODO success confirmation response
-		return "account " + account.getEmail() + " activated";
+        GenericResponse response = new GenericResponse();
+        response.addField("message", "account " + account.getEmail() + " activated");
+        response.setHttpStatus(HttpStatus.ACCEPTED);
+        response.addField("account", account.getId());
+		return response;
 	}
 	@RequestMapping(
 			value = "/reactivate",
 			params = { "token"},
 			method = RequestMethod.GET)
 	@ResponseBody
-	public String resendConfirmationToken(@RequestParam("token") String oldToken){
-		//TODO resent activation
+    @ResponseStatus(HttpStatus.ACCEPTED)
+	public GenericResponse resendConfirmationToken(@RequestParam("token") String oldToken) throws TokenNotFoundException{
         VerificationToken token = tokenService.getVerificationToken(oldToken);
         if(token == null)
-            return "token not found";
+            throw new TokenNotFoundException("Token " + oldToken + " not found");
         VerificationToken newToken = tokenService.generateNewVerificationToken(token);
         messageService.sendActivationToken(newToken.getToken(),newToken.getAccount().getEmail());
-        //TODO success verification token resend
-		return "sent";
+		return GenericResponse.createSimpleMessageResponse("Token sent to " + newToken.getAccount().getEmail(), HttpStatus.ACCEPTED);
 	}
 	
 }

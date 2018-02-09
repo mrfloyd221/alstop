@@ -11,6 +11,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -29,11 +30,11 @@ public class  Account implements UserDetails {
 	@Getter @Setter private Long id;
 	
 	@Getter @Setter private String email;
-	
+	@JsonIgnore
 	@Setter private String password;
 	@ElementCollection(fetch= FetchType.EAGER)
 	@Setter private List<String> roles = new ArrayList<String>();
-	
+	@JsonIgnore
 	@Setter private boolean enabled, credentialNonExpired, accountNonExpired, accountNonLocked;
 	
 	public Account(){
@@ -51,9 +52,8 @@ public class  Account implements UserDetails {
 		});
 		return authorities;
 	}
-	public boolean grantAuthority(String role){
+	public void grantAuthority(String role){
 		roles.add(role);
-		return false;
 	}
 	@Override
 	public String getPassword() {

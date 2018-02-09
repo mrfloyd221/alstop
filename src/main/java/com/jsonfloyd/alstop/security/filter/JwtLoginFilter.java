@@ -57,6 +57,10 @@ public class JwtLoginFilter extends UsernamePasswordAuthenticationFilter {
 		String token = Jwts.builder().setSubject(((Account) auth.getPrincipal()).getUsername())
 				.setExpiration(expirationDate)
 				.signWith(SignatureAlgorithm.HS512, secret.getBytes()).compact();
+		String body = "{ \"message\": \"success\", \"token\": \"Bearer " + token + "\"}";
 		res.addHeader("Authorization", "Bearer " + token);
+		res.getWriter().write(body);
+		res.getWriter().flush();
+		res.getWriter().close();
 	}
 }
