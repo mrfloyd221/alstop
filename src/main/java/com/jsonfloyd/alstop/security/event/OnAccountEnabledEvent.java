@@ -5,7 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.springframework.context.ApplicationEvent;
 
-//TODO account enabled event
+
 public class OnAccountEnabledEvent extends ApplicationEvent {
     @Getter
     private final Account account;

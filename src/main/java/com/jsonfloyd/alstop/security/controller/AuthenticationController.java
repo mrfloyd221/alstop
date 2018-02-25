@@ -53,7 +53,6 @@ public class AuthenticationController {
 		GenericResponse response = new GenericResponse();
         response.setHttpStatus(HttpStatus.CREATED);
 		response.addField("message", "account successfully created");
-		//TODO ??
 		response.addField("location", "localhost:8080/user/"+account.getId());
 		response.addField("account", account);
 	    return response;
@@ -70,7 +69,6 @@ public class AuthenticationController {
 			throw new ResourceException("Verification token cannot be null");
 		if(verificationToken.isExpired())
             throw new ResourceException("Verification token expired");
-		//TODO account enabled event
 		Account account = verificationToken.getAccount();
 		account = accountService.enableAccount(account.getId());
 		publisher.publishEvent(new OnAccountEnabledEvent(this,account));
