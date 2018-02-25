@@ -5,7 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-@ConfigurationProperties(prefix="mail")
+@ConfigurationProperties(prefix= "mail")
 public class MailProperties {
     @Getter @Setter private String protocol;
     @Getter @Setter private String host;

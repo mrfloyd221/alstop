@@ -3,4 +3,4 @@ jwt:
   sign-up-url: /register
   token:
     expiration-time: 189000000
-    secret: MyTokenSecret
+    secret: MyTokenSecre

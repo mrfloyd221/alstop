@@ -11,10 +11,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 @AllArgsConstructor
-@NoArgsConstructor
 public class GenericResponse {
     @Getter @Setter private Map<String, Object> payload;
     @Getter @Setter private HttpStatus httpStatus;
+    public GenericResponse(){
+        this.payload = new HashMap<>();
+        this.httpStatus = HttpStatus.OK;
+    }
     public static GenericResponse createSimpleMessageResponse(String message, HttpStatus httpStatus){
         GenericResponse response = new GenericResponse();
         HashMap<String, Object> body = new HashMap<>();
@@ -23,6 +26,7 @@ public class GenericResponse {
         response.setPayload(body);
         return  response;
     }
+
     public static GenericResponse createSimpleErrorResponse(String message){
         GenericResponse response = new GenericResponse();
         HashMap<String, Object> body = new HashMap<>();

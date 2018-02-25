@@ -1,11 +1,15 @@
 package com.jsonfloyd.alstop.security.controller;
 
+import com.jsonfloyd.alstop.security.event.OnAccountEnabledEvent;
+import com.jsonfloyd.alstop.security.event.OnRegistrationSuccessEvent;
+import com.jsonfloyd.alstop.security.event.OnVerificationTokenRefreshEvent;
 import com.jsonfloyd.alstop.security.exception.TokenNotFoundException;
 import com.jsonfloyd.alstop.util.exception.ResourceException;
 import com.jsonfloyd.alstop.util.model.GenericResponse;
 import com.jsonfloyd.alstop.util.service.MessageService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -27,14 +31,15 @@ import java.net.URISyntaxException;
 public class AuthenticationController {
 	private final AccountService accountService;
 	private final TokenService tokenService;
-    private final MessageService messageService;
+
+	private final ApplicationEventPublisher publisher;
 	@Autowired
-	public AuthenticationController(AccountService accountService, TokenService tokenService, MessageService messageService) {
+	public AuthenticationController(AccountService accountService, TokenService tokenService,  ApplicationEventPublisher publisher) {
 		this.accountService = accountService;
 		this.tokenService = tokenService;
-        this.messageService = messageService;
-    }
 
+		this.publisher = publisher;
+	}
 	@PostMapping("/register")
 	@ResponseBody
     @ResponseStatus(HttpStatus.CREATED)
@@ -44,10 +49,11 @@ public class AuthenticationController {
 		//TODO validate credentials
 		Account account =  accountService.createAccount(acc);
         VerificationToken token = tokenService.createVerificationToken(account);
-        messageService.sendActivationToken(token.getToken(), account.getEmail());
+        publisher.publishEvent(new OnRegistrationSuccessEvent(this,token));
 		GenericResponse response = new GenericResponse();
         response.setHttpStatus(HttpStatus.CREATED);
 		response.addField("message", "account successfully created");
+		//TODO ??
 		response.addField("location", "localhost:8080/user/"+account.getId());
 		response.addField("account", account);
 	    return response;
@@ -67,6 +73,7 @@ public class AuthenticationController {
 		//TODO account enabled event
 		Account account = verificationToken.getAccount();
 		account = accountService.enableAccount(account.getId());
+		publisher.publishEvent(new OnAccountEnabledEvent(this,account));
         GenericResponse response = new GenericResponse();
         response.addField("message", "account " + account.getEmail() + " activated");
         response.setHttpStatus(HttpStatus.ACCEPTED);
@@ -84,7 +91,7 @@ public class AuthenticationController {
         if(token == null)
             throw new TokenNotFoundException("Token " + oldToken + " not found");
         VerificationToken newToken = tokenService.generateNewVerificationToken(token);
-        messageService.sendActivationToken(newToken.getToken(),newToken.getAccount().getEmail());
+        publisher.publishEvent(new OnVerificationTokenRefreshEvent(this, token));
 		return GenericResponse.createSimpleMessageResponse("Token sent to " + newToken.getAccount().getEmail(), HttpStatus.ACCEPTED);
 	}
 	
